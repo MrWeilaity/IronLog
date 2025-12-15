@@ -19,10 +19,12 @@ public class SysUser {
     private String password;
 
     private String nickname;
+    private String email;
     private Integer gender; // 0: Secret, 1: Male, 2: Female
     private BigDecimal height;
     private BigDecimal weight;
     private LocalDate birthday;
+    private String bio;
     private Integer targetMetabolism;
     private String role;
     private Integer status;
@@ -38,6 +40,8 @@ public class SysUser {
     public void setPassword(String password) { this.password = password; }
     public String getNickname() { return nickname; }
     public void setNickname(String nickname) { this.nickname = nickname; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
     public Integer getGender() { return gender; }
     public void setGender(Integer gender) { this.gender = gender; }
     public BigDecimal getHeight() { return height; }
@@ -46,6 +50,8 @@ public class SysUser {
     public void setWeight(BigDecimal weight) { this.weight = weight; }
     public LocalDate getBirthday() { return birthday; }
     public void setBirthday(LocalDate birthday) { this.birthday = birthday; }
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
     public Integer getTargetMetabolism() { return targetMetabolism; }
     public void setTargetMetabolism(Integer targetMetabolism) { this.targetMetabolism = targetMetabolism; }
     public String getRole() { return role; }

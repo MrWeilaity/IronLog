@@ -9,9 +9,9 @@
       </template>
 
       <el-table :data="trainings" style="width: 100%" empty-text="暂无训练记录">
-        <el-table-column prop="date" label="日期" width="180" />
+        <el-table-column prop="recordDate" label="日期" width="180" />
         <el-table-column prop="duration" label="时长 (分钟)" width="120" />
-        <el-table-column prop="type" label="类型" width="150" />
+        <el-table-column prop="exerciseType" label="类型" width="150" />
         <el-table-column prop="notes" label="备注" />
         <el-table-column label="操作" width="150">
            <template #default="scope">
@@ -53,14 +53,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import axios from 'axios'
+import { getCurrentUserId } from '../utils/auth'
 
 const dialogVisible = ref(false)
-const trainings = ref([
-    { date: '2023-10-27', duration: 45, type: '跑步', notes: '感觉不错' },
-    { date: '2023-10-25', duration: 60, type: '举重', notes: '背部训练' }
-])
+const trainings = ref([])
+const userId = getCurrentUserId()
 
 const form = ref({
     date: new Date().toISOString().split('T')[0],
@@ -69,23 +69,65 @@ const form = ref({
     notes: ''
 })
 
-const submitTraining = () => {
-    trainings.value.unshift({ ...form.value })
-    dialogVisible.value = false
-    ElMessage.success('训练记录已添加')
-    // Reset form
-    form.value = {
-        date: new Date().toISOString().split('T')[0],
-        duration: 30,
-        type: '跑步',
-        notes: ''
+const fetchTrainings = async () => {
+    try {
+        const res = await axios.get('/api/training/records', {
+            params: { userId, date: new Date().toISOString().split('T')[0] }
+        })
+        if (res.data.code === 200) {
+            trainings.value = res.data.data || []
+        }
+    } catch (err) {
+        console.error('获取训练记录失败', err)
     }
 }
 
-const deleteTraining = (index) => {
-    trainings.value.splice(index, 1)
-    ElMessage.success('记录已删除')
+const submitTraining = async () => {
+    try {
+        const res = await axios.post('/api/training/records', {
+            userId,
+            recordDate: form.value.date,
+            duration: form.value.duration,
+            exerciseType: form.value.type,
+            notes: form.value.notes
+        })
+        if (res.data.code === 200) {
+            dialogVisible.value = false
+            ElMessage.success('训练记录已添加')
+            fetchTrainings()
+            // Reset form
+            form.value = {
+                date: new Date().toISOString().split('T')[0],
+                duration: 30,
+                type: '跑步',
+                notes: ''
+            }
+        } else {
+            ElMessage.error(res.data.msg || '添加失败')
+        }
+    } catch (err) {
+        ElMessage.error('添加失败')
+    }
 }
+
+const deleteTraining = async (index) => {
+    const training = trainings.value[index]
+    try {
+        const res = await axios.delete(`/api/training/records/${training.id}`)
+        if (res.data.code === 200) {
+            trainings.value.splice(index, 1)
+            ElMessage.success('记录已删除')
+        } else {
+            ElMessage.error(res.data.msg || '删除失败')
+        }
+    } catch (err) {
+        ElMessage.error('删除失败')
+    }
+}
+
+onMounted(() => {
+    fetchTrainings()
+})
 </script>
 
 <style scoped>

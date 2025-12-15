@@ -7,8 +7,7 @@
                     <span>体重变化趋势</span>
                 </template>
                 <div class="chart-placeholder">
-                    <!-- Placeholder for ECharts -->
-                    ECharts 体重折线图
+                    暂无体重数据
                 </div>
             </el-card>
         </el-col>
@@ -18,8 +17,7 @@
                     <span>运动类型分布</span>
                 </template>
                 <div class="chart-placeholder">
-                    <!-- Placeholder for ECharts -->
-                    ECharts 饼图
+                    暂无运动类型数据
                 </div>
             </el-card>
         </el-col>
@@ -43,11 +41,11 @@
 import { ref } from 'vue'
 
 const ranking = ref([
-    { username: 'FitnessKing', score: 12500, badges: 15 },
-    { username: 'Runner001', score: 11200, badges: 12 },
-    { username: 'YogaMaster', score: 9800, badges: 10 },
-    { username: 'IronMan', score: 8500, badges: 8 },
-    { username: 'Newbie', score: 500, badges: 1 }
+    { username: '健身达人', score: 12500, badges: 15 },
+    { username: '跑步爱好者', score: 11200, badges: 12 },
+    { username: '瑜伽大师', score: 9800, badges: 10 },
+    { username: '铁人', score: 8500, badges: 8 },
+    { username: '新手小白', score: 500, badges: 1 }
 ])
 </script>
 

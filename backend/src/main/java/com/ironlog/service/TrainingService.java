@@ -47,6 +47,10 @@ public class TrainingService {
         return baseActionRepository.save(action);
     }
 
+    public void deleteRecord(Long id) {
+        trainRecordRepository.deleteById(id);
+    }
+
     // Plans
     public Optional<TrainPlan> getCurrentPlan(Long userId) {
         return trainPlanRepository.findByUserIdAndIsCurrent(userId, 1);

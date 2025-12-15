@@ -66,7 +66,9 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import { getCurrentUserId } from '../utils/auth'
 
+const userId = getCurrentUserId()
 const waterIntake = ref(0)
 const waterGoal = 2500
 const dialogVisible = ref(false)
@@ -87,8 +89,7 @@ const colors = [
 
 const fetchWater = async () => {
   try {
-    // Hardcoded userId 1 for admin as per plan.Ideally this should come from user state.
-    const res = await axios.get('/api/water/today?userId=1')
+    const res = await axios.get(`/api/water/today?userId=${userId}`)
     if (res.data.code === 200) {
         waterIntake.value = res.data.data
     }
@@ -104,7 +105,7 @@ const addWater = () => {
 const submitWater = async () => {
     try {
         const res = await axios.post('/api/water/add', {
-            userId: 1,
+            userId,
             amount: waterForm.value.amount
         })
         if (res.data.code === 200) {

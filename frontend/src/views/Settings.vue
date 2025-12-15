@@ -39,20 +39,57 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import axios from 'axios'
+import { getCurrentUserId } from '../utils/auth'
+
+const userId = getCurrentUserId()
 
 const form = ref({
-    username: 'user123',
-    nickname: 'IronFan',
+    username: '',
+    nickname: '',
     gender: 1,
     height: 175,
     weight: 70,
-    birthday: '1995-01-01',
-    bio: '热爱运动，坚持打卡！'
+    birthday: '',
+    bio: ''
 })
 
-const saveSettings = () => {
-    ElMessage.success('个人信息已更新')
+const fetchUserInfo = async () => {
+    try {
+        const res = await axios.get(`/api/users/${userId}`)
+        if (res.data.code === 200 && res.data.data) {
+            const user = res.data.data
+            form.value = {
+                username: user.username || '',
+                nickname: user.nickname || '',
+                gender: user.gender || 1,
+                height: user.height || 175,
+                weight: user.weight || 70,
+                birthday: user.birthday || '',
+                bio: user.bio || ''
+            }
+        }
+    } catch (err) {
+        console.error('获取用户信息失败', err)
+    }
 }
+
+const saveSettings = async () => {
+    try {
+        const res = await axios.put(`/api/users/${userId}`, form.value)
+        if (res.data.code === 200) {
+            ElMessage.success('个人信息已更新')
+        } else {
+            ElMessage.error(res.data.msg || '更新失败')
+        }
+    } catch (err) {
+        ElMessage.error('更新失败')
+    }
+}
+
+onMounted(() => {
+    fetchUserInfo()
+})
 </script>

@@ -73,9 +73,9 @@
 import { ref } from 'vue'
 
 const recentUsers = ref([
-  { username: 'User1', date: '2023-10-26' },
-  { username: 'User2', date: '2023-10-25' },
-  { username: 'User3', date: '2023-10-25' },
+  { username: '用户1', date: '2023-10-26' },
+  { username: '用户2', date: '2023-10-25' },
+  { username: '用户3', date: '2023-10-25' },
 ])
 </script>
 

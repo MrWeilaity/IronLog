@@ -54,12 +54,17 @@ const handleLogin = async () => {
             body: JSON.stringify(loginForm)
         });
 
-        if (response.ok) {
+        const result = await response.json();
+        
+        if (result.code === 200) {
              ElMessage.success('登录成功')
+             // Store user info in localStorage or use a state management solution
+             if (result.data) {
+                 localStorage.setItem('user', JSON.stringify(result.data))
+             }
              router.push('/dashboard')
         } else {
-             const text = await response.text();
-             errorMessage.value = '登录失败: ' + text
+             errorMessage.value = result.msg || '登录失败'
         }
       } catch (error) {
         errorMessage.value = '网络错误: ' + error.message

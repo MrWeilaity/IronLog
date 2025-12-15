@@ -10,12 +10,16 @@
                    </div>
                </template>
                <el-table :data="meals" style="width: 100%" empty-text="今日暂无饮食记录">
-                   <el-table-column prop="mealType" label="餐别" width="100" />
-                   <el-table-column prop="foodName" label="食物" />
-                   <el-table-column prop="calories" label="卡路里" width="100" />
-                   <el-table-column prop="protein" label="蛋白质(g)" width="100" />
-                   <el-table-column prop="carbs" label="碳水(g)" width="100" />
-                   <el-table-column prop="fat" label="脂肪(g)" width="100" />
+                   <el-table-column label="餐别" width="100">
+                       <template #default="scope">
+                           {{ getMealTypeName(scope.row.mealType) }}
+                       </template>
+                   </el-table-column>
+                   <el-table-column prop="foodId" label="食物ID" width="100" />
+                   <el-table-column prop="calcCalories" label="卡路里" width="100" />
+                   <el-table-column prop="calcProtein" label="蛋白质(g)" width="100" />
+                   <el-table-column prop="calcCarbs" label="碳水(g)" width="100" />
+                   <el-table-column prop="calcFat" label="脂肪(g)" width="100" />
                </el-table>
            </el-card>
        </el-col>
@@ -72,15 +76,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import CaloriesChart from '../components/CaloriesChart.vue'
+import axios from 'axios'
+import { getCurrentUserId } from '../utils/auth'
 
 const dialogVisible = ref(false)
-const meals = ref([
-    { mealType: '早餐', foodName: '燕麦牛奶', calories: 350, protein: 12, carbs: 50, fat: 8 },
-    { mealType: '午餐', foodName: '鸡胸肉沙拉', calories: 450, protein: 40, carbs: 20, fat: 15 }
-])
+const meals = ref([])
+const userId = getCurrentUserId()
 
 const form = ref({
     mealType: '早餐',
@@ -91,24 +95,70 @@ const form = ref({
     fat: 0
 })
 
-const totalCalories = computed(() => meals.value.reduce((sum, item) => sum + item.calories, 0))
-const totalProtein = computed(() => meals.value.reduce((sum, item) => sum + item.protein, 0))
-const totalCarbs = computed(() => meals.value.reduce((sum, item) => sum + item.carbs, 0))
-const totalFat = computed(() => meals.value.reduce((sum, item) => sum + item.fat, 0))
+const totalCalories = computed(() => meals.value.reduce((sum, item) => sum + (parseFloat(item.calcCalories) || 0), 0))
+const totalProtein = computed(() => meals.value.reduce((sum, item) => sum + (parseFloat(item.calcProtein) || 0), 0))
+const totalCarbs = computed(() => meals.value.reduce((sum, item) => sum + (parseFloat(item.calcCarbs) || 0), 0))
+const totalFat = computed(() => meals.value.reduce((sum, item) => sum + (parseFloat(item.calcFat) || 0), 0))
 
-const addMeal = () => {
-    meals.value.push({ ...form.value })
-    dialogVisible.value = false
-    ElMessage.success('添加成功')
-    form.value = {
-        mealType: '早餐',
-        foodName: '',
-        calories: 0,
-        protein: 0,
-        carbs: 0,
-        fat: 0
+const fetchMeals = async () => {
+    try {
+        const res = await axios.get('/api/nutrition/diet-logs', {
+            params: { userId, date: new Date().toISOString().split('T')[0] }
+        })
+        if (res.data.code === 200) {
+            meals.value = res.data.data || []
+        }
+    } catch (err) {
+        console.error('获取饮食记录失败', err)
     }
 }
+
+const getMealTypeValue = (mealType) => {
+    const mapping = { '早餐': 1, '午餐': 2, '晚餐': 3, '加餐': 4 }
+    return mapping[mealType] || 1
+}
+
+const getMealTypeName = (mealType) => {
+    const mapping = { 1: '早餐', 2: '午餐', 3: '晚餐', 4: '加餐' }
+    return mapping[mealType] || '早餐'
+}
+
+const addMeal = async () => {
+    try {
+        const res = await axios.post('/api/nutrition/diet-logs', {
+            userId,
+            foodId: 1, // TODO: 应该从食物列表选择，需要实现食物搜索功能
+            logDate: new Date().toISOString().split('T')[0],
+            mealType: getMealTypeValue(form.value.mealType),
+            intakeAmount: 100,
+            calcCalories: form.value.calories,
+            calcProtein: form.value.protein,
+            calcCarbs: form.value.carbs,
+            calcFat: form.value.fat
+        })
+        if (res.data.code === 200) {
+            dialogVisible.value = false
+            ElMessage.success('添加成功')
+            fetchMeals()
+            form.value = {
+                mealType: '早餐',
+                foodName: '',
+                calories: 0,
+                protein: 0,
+                carbs: 0,
+                fat: 0
+            }
+        } else {
+            ElMessage.error(res.data.msg || '添加失败')
+        }
+    } catch (err) {
+        ElMessage.error('添加失败')
+    }
+}
+
+onMounted(() => {
+    fetchMeals()
+})
 </script>
 
 <style scoped>
