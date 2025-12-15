@@ -47,6 +47,25 @@
       <el-col :span="12">
         <el-card>
           <template #header>
+            <span>用户增长趋势（最近7天）</span>
+          </template>
+          <div id="userGrowthChart" style="height: 300px;"></div>
+        </el-card>
+      </el-col>
+      <el-col :span="12">
+        <el-card>
+          <template #header>
+            <span>训练活动趋势（最近7天）</span>
+          </template>
+          <div id="activityChart" style="height: 300px;"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <el-row :gutter="20" class="mt-20">
+      <el-col :span="12">
+        <el-card>
+          <template #header>
             <span>最新注册用户</span>
           </template>
           <el-table :data="recentUsers" style="width: 100%">
@@ -65,8 +84,17 @@
           <template #header>
             <span>系统公告</span>
           </template>
-          <div v-for="item in 3" :key="item" class="text item">
-            {{ '公告内容 ' + item }}
+          <el-empty v-if="announcements.length === 0" description="暂无公告" />
+          <div v-else>
+            <div v-for="announcement in announcements" :key="announcement.id" class="announcement-item">
+              <div class="announcement-title">
+                <el-tag v-if="announcement.priority === 2" type="danger" size="small">紧急</el-tag>
+                <el-tag v-else-if="announcement.priority === 1" type="warning" size="small">重要</el-tag>
+                <span>{{ announcement.title }}</span>
+              </div>
+              <div class="announcement-content">{{ announcement.content }}</div>
+              <div class="announcement-date">{{ formatDate(announcement.createdAt) }}</div>
+            </div>
           </div>
         </el-card>
       </el-col>
@@ -77,13 +105,17 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import * as echarts from 'echarts'
 
 const recentUsers = ref([])
+const announcements = ref([])
 const stats = ref({
   totalUsers: 0,
   activeToday: 0,
   monthlyTrainings: 0,
-  systemStatus: '正常'
+  systemStatus: '正常',
+  userGrowthChart: [],
+  activityChart: []
 })
 
 const fetchDashboardStats = async () => {
@@ -91,6 +123,7 @@ const fetchDashboardStats = async () => {
     const res = await axios.get('/api/admin/dashboard-stats')
     if (res.data.code === 200) {
       stats.value = res.data.data
+      renderCharts()
     }
   } catch (err) {
     console.error('获取管理后台统计失败', err)
@@ -108,9 +141,77 @@ const fetchRecentUsers = async () => {
   }
 }
 
+const fetchAnnouncements = async () => {
+  try {
+    const res = await axios.get('/api/system/announcements')
+    if (res.data.code === 200) {
+      announcements.value = res.data.data || []
+    }
+  } catch (err) {
+    console.error('获取公告失败', err)
+  }
+}
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return ''
+  return dateStr.substring(0, 10)
+}
+
+const renderCharts = () => {
+  // Render user growth chart
+  const userGrowthEl = document.getElementById('userGrowthChart')
+  if (userGrowthEl && stats.value.userGrowthChart) {
+    const userGrowthChart = echarts.init(userGrowthEl)
+    const dates = stats.value.userGrowthChart.map(d => d.date.substring(5))
+    const counts = stats.value.userGrowthChart.map(d => d.count)
+    
+    userGrowthChart.setOption({
+      tooltip: { trigger: 'axis' },
+      xAxis: {
+        type: 'category',
+        data: dates
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [{
+        data: counts,
+        type: 'line',
+        smooth: true,
+        itemStyle: { color: '#409EFF' }
+      }]
+    })
+  }
+
+  // Render activity chart
+  const activityEl = document.getElementById('activityChart')
+  if (activityEl && stats.value.activityChart) {
+    const activityChart = echarts.init(activityEl)
+    const dates = stats.value.activityChart.map(d => d.date.substring(5))
+    const counts = stats.value.activityChart.map(d => d.count)
+    
+    activityChart.setOption({
+      tooltip: { trigger: 'axis' },
+      xAxis: {
+        type: 'category',
+        data: dates
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [{
+        data: counts,
+        type: 'bar',
+        itemStyle: { color: '#67C23A' }
+      }]
+    })
+  }
+}
+
 onMounted(() => {
   fetchDashboardStats()
   fetchRecentUsers()
+  fetchAnnouncements()
 })
 </script>
 
@@ -125,5 +226,28 @@ onMounted(() => {
 }
 .status-ok {
     color: #67C23A;
+}
+.announcement-item {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+.announcement-item:last-child {
+  border-bottom: none;
+}
+.announcement-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.announcement-title .el-tag {
+  margin-right: 8px;
+}
+.announcement-content {
+  color: #666;
+  margin-bottom: 5px;
+}
+.announcement-date {
+  font-size: 12px;
+  color: #999;
 }
 </style>
