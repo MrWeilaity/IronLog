@@ -1,7 +1,7 @@
 <template>
   <div class="login-wrapper">
     <div class="login-box">
-      <h2>IronLog 登录</h2>
+      <h2>铁律 登录</h2>
       <el-form :model="loginForm" :rules="rules" ref="loginFormRef" label-width="0px">
         <el-form-item prop="username">
           <el-input v-model="loginForm.username" placeholder="用户名" prefix-icon="User" />

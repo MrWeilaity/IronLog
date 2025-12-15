@@ -1,7 +1,7 @@
 <template>
   <div class="register-wrapper">
     <div class="register-box">
-      <h2>IronLog 注册</h2>
+      <h2>铁律 注册</h2>
       <el-form :model="registerForm" :rules="rules" ref="registerFormRef" label-width="0px">
         <el-form-item prop="username">
           <el-input v-model="registerForm.username" placeholder="用户名" prefix-icon="User" />

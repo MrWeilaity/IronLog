@@ -2,7 +2,7 @@
   <div class="common-layout">
     <el-container class="layout-container">
       <el-aside width="200px" class="sidebar">
-        <div class="logo">IronLog</div>
+        <div class="logo">铁律</div>
         <el-menu
           :default-active="activeMenu"
           class="el-menu-vertical-demo"

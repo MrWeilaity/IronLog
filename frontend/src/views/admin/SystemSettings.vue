@@ -35,7 +35,7 @@ import { ElMessage } from 'element-plus'
 import axios from 'axios'
 
 const settings = ref({
-  site_title: 'IronLog 运动健康管理系统',
+  site_title: '铁律 运动健康管理系统',
   allow_registration: true,
   maintenance_mode: false,
   maintenance_message: '系统正在维护中，请稍后再试'
@@ -47,7 +47,7 @@ const fetchSettings = async () => {
     if (res.data.code === 200) {
       const data = res.data.data
       settings.value = {
-        site_title: data.site_title || 'IronLog 运动健康管理系统',
+        site_title: data.site_title || '铁律 运动健康管理系统',
         allow_registration: data.allow_registration === 'true',
         maintenance_mode: data.maintenance_mode === 'true',
         maintenance_message: data.maintenance_message || '系统正在维护中，请稍后再试'
