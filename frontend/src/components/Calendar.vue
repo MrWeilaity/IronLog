@@ -14,22 +14,35 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Check, Close } from '@element-plus/icons-vue'
+import axios from 'axios'
+import { getCurrentUserId } from '../utils/auth'
 
 const value = ref(new Date())
+const trainingData = ref({})
+const userId = getCurrentUserId()
 
-// 模拟数据：日期 -> 状态
-const trainingData = {
-  '2023-10-25': 'completed',
-  '2023-10-26': 'missed',
-  '2023-10-27': 'completed'
+const fetchCalendarData = async () => {
+  try {
+    const yearMonth = value.value.getFullYear() + '-' + String(value.value.getMonth() + 1).padStart(2, '0')
+    const res = await axios.get(`/api/calendar/heatmap/${userId}`, {
+      params: { yearMonth }
+    })
+    if (res.data.code === 200 && res.data.data.heatmap) {
+      const newData = {}
+      res.data.data.heatmap.forEach(day => {
+        newData[day.date] = day.status
+      })
+      trainingData.value = newData
+    }
+  } catch (err) {
+    console.error('获取日历数据失败', err)
+  }
 }
 
 const getStatus = (date) => {
-  // date string format usually: YYYY-MM-DD
-  // data.day from el-calendar is YYYY-MM-DD
-  return trainingData[date]
+  return trainingData.value[date]
 }
 
 const getStatusText = (date) => {
@@ -38,6 +51,15 @@ const getStatusText = (date) => {
   if (status === 'missed') return '缺勤'
   return ''
 }
+
+// Watch for month/year changes
+watch(value, () => {
+  fetchCalendarData()
+})
+
+onMounted(() => {
+  fetchCalendarData()
+})
 </script>
 
 <style scoped>

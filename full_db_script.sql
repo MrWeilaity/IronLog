@@ -71,14 +71,17 @@ CREATE TABLE train_plan (
 CREATE TABLE train_record (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    action_id BIGINT NOT NULL,
+    action_id BIGINT,  -- Made nullable to support simple workout logging
     record_date DATE NOT NULL,
-    set_no INT NOT NULL,
-    weight DECIMAL(10, 2) NOT NULL,
-    reps INT NOT NULL,
+    set_no INT,  -- Made nullable to support simple workout logging
+    weight DECIMAL(10, 2),  -- Made nullable to support simple workout logging
+    reps INT,  -- Made nullable to support simple workout logging
     rpe INT,
     superset_id BIGINT,
     note VARCHAR(255),
+    duration INT,  -- Duration in minutes for simple workout logging
+    exercise_type VARCHAR(100),  -- Type of exercise for simple workout logging
+    notes TEXT,  -- Additional notes for simple workout logging
     created_at DATETIME,
     CONSTRAINT fk_record_user FOREIGN KEY (user_id) REFERENCES sys_user(id),
     CONSTRAINT fk_record_action FOREIGN KEY (action_id) REFERENCES base_action(id)

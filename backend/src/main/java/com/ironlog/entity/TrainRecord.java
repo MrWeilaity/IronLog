@@ -15,19 +15,19 @@ public class TrainRecord {
     @Column(nullable = false)
     private Long userId;
 
-    @Column(nullable = false)
+    // Made nullable to support simple workout logging without specific action
     private Long actionId;
 
     @Column(nullable = false)
     private LocalDate recordDate;
 
-    @Column(nullable = false)
+    // Made nullable to support simple workout logging
     private Integer setNo;
 
-    @Column(nullable = false)
+    // Made nullable to support simple workout logging
     private BigDecimal weight;
 
-    @Column(nullable = false)
+    // Made nullable to support simple workout logging
     private Integer reps;
 
     private Integer rpe;
