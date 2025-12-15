@@ -33,6 +33,12 @@ public class TrainRecord {
     private Integer rpe;
     private Long supersetId;
     private String note;
+    
+    // Additional fields for simple workout logging
+    private Integer duration; // Duration in minutes
+    private String exerciseType; // Type of exercise
+    private String notes; // Additional notes
+    
     private LocalDateTime createdAt;
 
     // Getters and Setters
@@ -56,6 +62,12 @@ public class TrainRecord {
     public void setSupersetId(Long supersetId) { this.supersetId = supersetId; }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
+    public Integer getDuration() { return duration; }
+    public void setDuration(Integer duration) { this.duration = duration; }
+    public String getExerciseType() { return exerciseType; }
+    public void setExerciseType(String exerciseType) { this.exerciseType = exerciseType; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

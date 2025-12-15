@@ -111,7 +111,7 @@ const submitTraining = async () => {
 const deleteTraining = async (index) => {
     const training = trainings.value[index]
     try {
-        const res = await axios.delete(`/api/training/records/${training.recordId}`)
+        const res = await axios.delete(`/api/training/records/${training.id}`)
         if (res.data.code === 200) {
             trainings.value.splice(index, 1)
             ElMessage.success('记录已删除')
