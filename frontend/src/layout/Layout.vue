@@ -42,6 +42,10 @@
               <el-breadcrumb-item>{{ currentRouteName }}</el-breadcrumb-item>
             </el-breadcrumb>
             <div class="user-info">
+              <el-button v-if="isAdmin" type="primary" size="small" @click="goToAdmin" style="margin-right: 15px;">
+                <el-icon><Setting /></el-icon>
+                <span>进入管理后台</span>
+              </el-button>
               <el-dropdown>
                 <span class="el-dropdown-link">
                   {{ username }} <el-icon class="el-icon--right"><arrow-down /></el-icon>
@@ -73,6 +77,7 @@ const router = useRouter()
 const activeMenu = computed(() => route.path)
 const currentRouteName = computed(() => route.name)
 const username = ref('用户')
+const isAdmin = ref(false)
 
 onMounted(() => {
   try {
@@ -80,11 +85,16 @@ onMounted(() => {
     if (userStr) {
       const user = JSON.parse(userStr)
       username.value = user.nickname || user.username || '用户'
+      isAdmin.value = user.role === 'ADMIN'
     }
   } catch (err) {
     console.error('Failed to parse user data', err)
   }
 })
+
+const goToAdmin = () => {
+  router.push('/admin/dashboard')
+}
 
 const logout = () => {
   localStorage.removeItem('user')

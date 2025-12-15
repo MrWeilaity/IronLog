@@ -12,6 +12,9 @@
         <el-form-item>
           <el-button type="primary" :loading="loading" class="login-btn" @click="handleLogin">登录</el-button>
         </el-form-item>
+        <el-form-item>
+          <el-link type="primary" @click="goToRegister">没有账号？去注册</el-link>
+        </el-form-item>
       </el-form>
       <div v-if="errorMessage" class="error-msg">{{ errorMessage }}</div>
     </div>
@@ -73,6 +76,10 @@ const handleLogin = async () => {
       }
     }
   })
+}
+
+const goToRegister = () => {
+  router.push('/register')
 }
 </script>
 

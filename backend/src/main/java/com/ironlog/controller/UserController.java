@@ -60,8 +60,21 @@ public class UserController {
         
         SysUser user = userOpt.get();
         
-        // Verify password
-        if (!user.getPassword().equals(loginRequest.getPassword())) {
+        // Verify password - use PasswordEncoder.matches for encoded passwords
+        // For backward compatibility, also check plain text passwords
+        String userPassword = user.getPassword();
+        String loginPassword = loginRequest.getPassword();
+        
+        boolean passwordMatches = false;
+        if (userPassword.equals(loginPassword)) {
+            // Plain text match (for existing users with unhashed passwords)
+            passwordMatches = true;
+        } else {
+            // Try encoded password match
+            passwordMatches = com.ironlog.common.PasswordEncoder.matches(loginPassword, userPassword);
+        }
+        
+        if (!passwordMatches) {
             return Result.error(401, "用户名或密码错误");
         }
         

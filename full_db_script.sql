@@ -15,10 +15,12 @@ CREATE TABLE sys_user (
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     nickname VARCHAR(255),
+    email VARCHAR(255) UNIQUE,
     gender INT, -- 0: 保密, 1: 男, 2: 女
     height DECIMAL(10, 2),
     weight DECIMAL(10, 2),
     birthday DATE,
+    bio TEXT,
     target_metabolism INT,
     role VARCHAR(255),
     status INT,
@@ -114,15 +116,35 @@ CREATE TABLE water_log (
     CONSTRAINT fk_water_user FOREIGN KEY (user_id) REFERENCES sys_user(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Table: system_settings
+CREATE TABLE system_settings (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(255) NOT NULL UNIQUE,
+    setting_value TEXT,
+    description VARCHAR(500),
+    updated_at DATETIME
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table: system_announcement
+CREATE TABLE system_announcement (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    priority INT DEFAULT 0, -- 0: 正常, 1: 重要, 2: 紧急
+    status INT DEFAULT 1, -- 0: 禁用, 1: 启用
+    created_at DATETIME,
+    updated_at DATETIME
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 -- 3. Inserting Data (Using Chinese names)
 
 -- Users (密码均为 123456)
-INSERT INTO sys_user (id, username, password, nickname, gender, height, weight, birthday, target_metabolism, role, status, created_at, updated_at) VALUES
-(1, 'admin', '123456', '管理员', 1, 180.00, 80.00, '1990-01-01', 2500, 'ADMIN', 1, NOW(), NOW()),
-(2, 'zhangsan', '123456', '张三', 1, 175.00, 70.00, '1995-05-20', 2200, 'USER', 1, NOW(), NOW()),
-(3, 'lisi', '123456', '李四', 1, 178.00, 75.00, '1992-08-15', 2300, 'USER', 1, NOW(), NOW()),
-(4, 'wangwu', '123456', '王五', 2, 165.00, 55.00, '1998-03-10', 1800, 'USER', 1, NOW(), NOW());
+INSERT INTO sys_user (id, username, password, nickname, email, gender, height, weight, birthday, bio, target_metabolism, role, status, created_at, updated_at) VALUES
+(1, 'admin', '123456', '管理员', 'admin@ironlog.com', 1, 180.00, 80.00, '1990-01-01', '系统管理员，负责平台日常管理和维护工作。', 2500, 'ADMIN', 1, DATE_SUB(NOW(), INTERVAL 90 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(2, 'zhangsan', '123456', '张三', 'zhangsan@example.com', 1, 175.00, 70.00, '1995-05-20', '健身爱好者，目标是练出完美身材。', 2200, 'USER', 1, DATE_SUB(NOW(), INTERVAL 60 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(3, 'lisi', '123456', '李四', 'lisi@example.com', 1, 178.00, 75.00, '1992-08-15', '力量训练爱好者，专注于提高最大力量。', 2300, 'USER', 1, DATE_SUB(NOW(), INTERVAL 45 DAY), DATE_SUB(NOW(), INTERVAL 3 DAY)),
+(4, 'wangwu', '123456', '王五', 'wangwu@example.com', 2, 165.00, 55.00, '1998-03-10', '瑜伽和有氧运动爱好者，追求健康生活方式。', 1800, 'USER', 1, DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY));
 
 -- Base Actions (动作库)
 -- 胸部
@@ -179,40 +201,65 @@ INSERT INTO train_plan (user_id, plan_name, goal, weekly_schedule, is_current, c
 -- Train Record (训练记录)
 -- Day 1: 推 (6天前)
 INSERT INTO train_record (user_id, action_id, record_date, set_no, weight, reps, rpe, superset_id, note, created_at) VALUES
-(1, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 1, 60.00, 12, 7, NULL, '热身组', NOW()),
-(1, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 2, 80.00, 8, 8, NULL, '正式组', NOW()),
-(1, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 3, 80.00, 8, 9, NULL, '有点累', NOW()),
-(1, 10, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 1, 40.00, 10, 8, NULL, '站姿推举', NOW()),
-(1, 10, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 2, 40.00, 10, 8, NULL, NULL, NOW());
+(1, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 1, 60.00, 12, 7, NULL, '热身组', DATE_SUB(NOW(), INTERVAL 6 DAY)),
+(1, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 2, 80.00, 8, 8, NULL, '正式组', DATE_SUB(NOW(), INTERVAL 6 DAY)),
+(1, 1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 3, 80.00, 8, 9, NULL, '有点累', DATE_SUB(NOW(), INTERVAL 6 DAY)),
+(1, 10, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 1, 40.00, 10, 8, NULL, '站姿推举', DATE_SUB(NOW(), INTERVAL 6 DAY)),
+(1, 10, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 2, 40.00, 10, 8, NULL, NULL, DATE_SUB(NOW(), INTERVAL 6 DAY));
 
 -- Day 2: 拉 (5天前)
 INSERT INTO train_record (user_id, action_id, record_date, set_no, weight, reps, rpe, superset_id, note, created_at) VALUES
-(1, 4, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 1, 100.00, 5, 8, NULL, '大重量硬拉', NOW()),
-(1, 4, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 2, 120.00, 3, 9, NULL, NULL, NOW()),
-(1, 5, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 1, 0.00, 10, 8, NULL, '自重引体', NOW());
+(1, 4, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 1, 100.00, 5, 8, NULL, '大重量硬拉', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+(1, 4, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 2, 120.00, 3, 9, NULL, NULL, DATE_SUB(NOW(), INTERVAL 5 DAY)),
+(1, 5, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 1, 0.00, 10, 8, NULL, '自重引体', DATE_SUB(NOW(), INTERVAL 5 DAY));
 
 -- Day 3: 腿 (4天前)
 INSERT INTO train_record (user_id, action_id, record_date, set_no, weight, reps, rpe, superset_id, note, created_at) VALUES
-(1, 7, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 1, 100.00, 5, 8, NULL, '深蹲', NOW()),
-(1, 7, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 2, 100.00, 5, 8, NULL, NULL, NOW());
+(1, 7, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 1, 100.00, 5, 8, NULL, '深蹲', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+(1, 7, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 2, 100.00, 5, 8, NULL, NULL, DATE_SUB(NOW(), INTERVAL 4 DAY)),
+(2, 2, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 1, 0.00, 15, 7, NULL, '俯卧撑', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+(2, 2, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 2, 0.00, 12, 8, NULL, NULL, DATE_SUB(NOW(), INTERVAL 3 DAY)),
+(2, 14, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 1, 0.00, 30, 6, NULL, '跑步30分钟', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+(3, 7, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 1, 120.00, 5, 9, NULL, '深蹲', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(3, 7, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 2, 120.00, 5, 9, NULL, NULL, DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(3, 4, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 1, 140.00, 5, 9, NULL, '硬拉', DATE_SUB(NOW(), INTERVAL 2 DAY));
 
 -- Diet Log (饮食记录)
 INSERT INTO diet_log (user_id, food_id, log_date, meal_type, intake_amount, calc_calories, calc_protein, calc_fat, calc_carbs, created_at) VALUES
-(1, 3, DATE_SUB(CURDATE(), INTERVAL 0 DAY), 1, 2.00, 140.00, 12.00, 10.00, 1.20, NOW()), -- 2个鸡蛋 早餐
-(1, 5, DATE_SUB(CURDATE(), INTERVAL 0 DAY), 1, 1.00, 389.00, 16.90, 6.90, 66.30, NOW()), -- 100g 燕麦
-(1, 1, DATE_SUB(CURDATE(), INTERVAL 0 DAY), 2, 2.00, 330.00, 62.00, 7.20, 0.00, NOW()), -- 200g 鸡胸肉 午餐
-(1, 2, DATE_SUB(CURDATE(), INTERVAL 0 DAY), 2, 2.00, 260.00, 5.40, 0.60, 56.00, NOW()); -- 200g 米饭
-
-INSERT INTO diet_log (user_id, food_id, log_date, meal_type, intake_amount, calc_calories, calc_protein, calc_fat, calc_carbs, created_at) VALUES
-(1, 6, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 4, 1.00, 120.00, 24.00, 1.00, 3.00, NOW()), -- 蛋白粉 加餐
-(1, 1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 3, 2.00, 330.00, 62.00, 7.20, 0.00, NOW()); -- 鸡胸肉 晚餐
+(1, 3, CURDATE(), 1, 2.00, 140.00, 12.00, 10.00, 1.20, DATE_ADD(CURDATE(), INTERVAL 8 HOUR)), -- 2个鸡蛋 早餐
+(1, 5, CURDATE(), 1, 1.00, 389.00, 16.90, 6.90, 66.30, DATE_ADD(CURDATE(), INTERVAL 8 HOUR)), -- 100g 燕麦
+(1, 1, CURDATE(), 2, 2.00, 330.00, 62.00, 7.20, 0.00, DATE_ADD(CURDATE(), INTERVAL 12 HOUR)), -- 200g 鸡胸肉 午餐
+(1, 2, CURDATE(), 2, 2.00, 260.00, 5.40, 0.60, 56.00, DATE_ADD(CURDATE(), INTERVAL 12 HOUR)), -- 200g 米饭
+(1, 6, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 4, 1.00, 120.00, 24.00, 1.00, 3.00, DATE_SUB(NOW(), INTERVAL 1 DAY)), -- 蛋白粉 加餐
+(1, 1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 3, 2.00, 330.00, 62.00, 7.20, 0.00, DATE_SUB(NOW(), INTERVAL 1 DAY)), -- 鸡胸肉 晚餐
+(2, 3, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 1, 2.00, 140.00, 12.00, 10.00, 1.20, DATE_SUB(NOW(), INTERVAL 2 DAY)), -- 鸡蛋
+(2, 2, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 2, 2.00, 260.00, 5.40, 0.60, 56.00, DATE_SUB(NOW(), INTERVAL 2 DAY)), -- 米饭
+(3, 1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 2, 2.50, 412.50, 77.50, 9.00, 0.00, DATE_SUB(NOW(), INTERVAL 1 DAY)); -- 鸡胸肉
 
 -- Water Log (饮水记录)
 INSERT INTO water_log (user_id, log_date, amount_ml, created_at) VALUES
-(1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 2500, NOW()),
-(1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 3000, NOW()),
-(1, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 1500, NOW()),
-(1, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 2000, NOW()),
-(1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 2800, NOW()),
-(1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 3200, NOW()),
-(1, CURDATE(), 1000, NOW());
+(1, DATE_SUB(CURDATE(), INTERVAL 6 DAY), 2500, DATE_SUB(NOW(), INTERVAL 6 DAY)),
+(1, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 3000, DATE_SUB(NOW(), INTERVAL 5 DAY)),
+(1, DATE_SUB(CURDATE(), INTERVAL 4 DAY), 1500, DATE_SUB(NOW(), INTERVAL 4 DAY)),
+(1, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 2000, DATE_SUB(NOW(), INTERVAL 3 DAY)),
+(1, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 2800, DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(1, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 3200, DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(1, CURDATE(), 1000, NOW()),
+(2, DATE_SUB(CURDATE(), INTERVAL 3 DAY), 2000, DATE_SUB(NOW(), INTERVAL 3 DAY)),
+(2, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 2500, DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(2, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 2200, DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(3, DATE_SUB(CURDATE(), INTERVAL 2 DAY), 2800, DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(3, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 3000, DATE_SUB(NOW(), INTERVAL 1 DAY));
+
+-- System Settings (系统设置)
+INSERT INTO system_settings (setting_key, setting_value, description, updated_at) VALUES
+('site_title', 'IronLog 运动健康管理系统', '网站标题', NOW()),
+('allow_registration', 'true', '是否允许用户注册', NOW()),
+('maintenance_mode', 'false', '维护模式', NOW()),
+('maintenance_message', '系统正在维护中，请稍后再试', '维护模式提示信息', NOW());
+
+-- System Announcements (系统公告)
+INSERT INTO system_announcement (title, content, priority, status, created_at, updated_at) VALUES
+('欢迎使用IronLog健身管理系统', '欢迎使用IronLog！这是一个全方位的运动健康管理平台，帮助您记录训练、管理饮食、追踪进度。让我们一起开始健康生活吧！', 1, 1, DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_SUB(NOW(), INTERVAL 7 DAY)),
+('新功能上线：训练计划功能', '我们很高兴地宣布，训练计划功能已经上线！您现在可以创建个性化的训练计划，并按照计划进行系统的训练。', 0, 1, DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_SUB(NOW(), INTERVAL 3 DAY)),
+('系统维护通知', '系统将在本周日凌晨2:00-4:00进行例行维护，期间可能无法访问。请提前做好安排，给您带来不便敬请谅解。', 2, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY));

@@ -1,5 +1,6 @@
 package com.ironlog.service;
 
+import com.ironlog.common.PasswordEncoder;
 import com.ironlog.entity.SysUser;
 import com.ironlog.repository.SysUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +16,18 @@ public class UserService {
     private SysUserRepository userRepository;
 
     public SysUser registerUser(SysUser user) {
-        // In a real app, password should be hashed here
-        // user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // Encode password before saving
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            user.setPassword(PasswordEncoder.encode(user.getPassword()));
+        }
+        
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        if (user.getCreatedAt() == null) {
+            user.setCreatedAt(now);
+        }
+        if (user.getUpdatedAt() == null) {
+            user.setUpdatedAt(now);
+        }
         return userRepository.save(user);
     }
 
@@ -33,6 +44,7 @@ public class UserService {
     }
 
     public SysUser updateUser(SysUser user) {
+        user.setUpdatedAt(java.time.LocalDateTime.now());
         return userRepository.save(user);
     }
 

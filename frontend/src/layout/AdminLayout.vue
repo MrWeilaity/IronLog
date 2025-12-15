@@ -30,6 +30,10 @@
               <el-breadcrumb-item>{{ currentRouteName }}</el-breadcrumb-item>
             </el-breadcrumb>
             <div class="user-info">
+              <el-button type="success" size="small" @click="goToFrontend" style="margin-right: 15px;">
+                <el-icon><User /></el-icon>
+                <span>返回前台</span>
+              </el-button>
               <el-dropdown>
                 <span class="el-dropdown-link">
                   管理员 <el-icon class="el-icon--right"><arrow-down /></el-icon>
@@ -61,8 +65,13 @@ const router = useRouter()
 const activeMenu = computed(() => route.path)
 const currentRouteName = computed(() => route.meta.title || route.name)
 
+const goToFrontend = () => {
+  router.push('/dashboard')
+}
+
 const logout = () => {
-    router.push('/login')
+  localStorage.removeItem('user')
+  router.push('/login')
 }
 </script>
 

@@ -2,9 +2,11 @@ package com.ironlog.service;
 
 import com.ironlog.entity.SysUser;
 import com.ironlog.entity.TrainRecord;
+import com.ironlog.entity.SystemAnnouncement;
 import com.ironlog.repository.SysUserRepository;
 import com.ironlog.repository.TrainRecordRepository;
 import com.ironlog.repository.DietLogRepository;
+import com.ironlog.repository.SystemAnnouncementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,6 +28,9 @@ public class AdminService {
 
     @Autowired
     private DietLogRepository dietLogRepository;
+
+    @Autowired
+    private SystemAnnouncementRepository announcementRepository;
 
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
@@ -61,6 +66,44 @@ public class AdminService {
 
         // System status
         stats.put("systemStatus", "正常");
+
+        // Chart data for user growth (last 7 days)
+        List<Map<String, Object>> userGrowthData = new ArrayList<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+            
+            long newUsers = allUsers.stream()
+                .filter(u -> u.getCreatedAt() != null && 
+                             !u.getCreatedAt().isBefore(startOfDay) && 
+                             u.getCreatedAt().isBefore(endOfDay))
+                .count();
+            
+            Map<String, Object> dayData = new HashMap<>();
+            dayData.put("date", date.toString());
+            dayData.put("count", newUsers);
+            userGrowthData.add(dayData);
+        }
+        stats.put("userGrowthChart", userGrowthData);
+
+        // Chart data for training activity (last 7 days)
+        List<Map<String, Object>> activityData = new ArrayList<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            
+            long dayTrainings = 0;
+            for (SysUser user : allUsers) {
+                List<TrainRecord> records = trainRecordRepository.findByUserIdAndRecordDate(user.getId(), date);
+                dayTrainings += records.size();
+            }
+            
+            Map<String, Object> dayData = new HashMap<>();
+            dayData.put("date", date.toString());
+            dayData.put("count", dayTrainings);
+            activityData.add(dayData);
+        }
+        stats.put("activityChart", activityData);
 
         return stats;
     }
@@ -116,5 +159,18 @@ public class AdminService {
         }
         
         return health;
+    }
+
+    public boolean resetUserPassword(Long userId, String newPassword) {
+        Optional<SysUser> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            SysUser user = userOpt.get();
+            // Encode password before saving
+            user.setPassword(com.ironlog.common.PasswordEncoder.encode(newPassword));
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+            return true;
+        }
+        return false;
     }
 }
