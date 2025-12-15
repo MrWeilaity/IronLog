@@ -45,10 +45,10 @@ const initChart = () => {
     },
     toolbox: {
       feature: {
-        dataView: { show: true, readOnly: false },
-        magicType: { show: true, type: ['line', 'bar'] },
-        restore: { show: true },
-        saveAsImage: { show: true }
+        dataView: { show: true, readOnly: false, title: '数据视图' },
+        magicType: { show: true, type: ['line', 'bar'], title: { line: '切换为折线图', bar: '切换为柱状图' } },
+        restore: { show: true, title: '还原' },
+        saveAsImage: { show: true, title: '保存为图片' }
       }
     },
     legend: {
@@ -58,7 +58,7 @@ const initChart = () => {
     xAxis: [
       {
         type: 'category',
-        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
         axisPointer: {
           type: 'shadow'
         }
@@ -96,7 +96,7 @@ const initChart = () => {
           }
         },
         itemStyle: {
-            color: '#F2D4A8' // 燕麦色/浅橙色
+            color: '#F2D4A8'
         },
         data: [2200, 2400, 2100, 2500, 2300, 2800, 2600]
       },
@@ -110,7 +110,7 @@ const initChart = () => {
           }
         },
         itemStyle: {
-            color: '#0000FF' // 深蓝色/荧光蓝 (Adjusted for visibility)
+            color: '#0000FF'
         },
         lineStyle: {
             color: '#1E90FF',

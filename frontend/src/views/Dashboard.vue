@@ -5,15 +5,15 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
-              <span>Today's Water</span>
-              <el-button class="button" text @click="addWater">Add</el-button>
+              <span>今日饮水量</span>
+              <el-button class="button" text @click="addWater">添加</el-button>
             </div>
           </template>
           <div class="text item">
             <el-progress type="dashboard" :percentage="waterPercentage" :color="colors">
               <template #default="{ percentage }">
                 <span class="percentage-value">{{ waterIntake }} ml</span>
-                <span class="percentage-label">Goal: 2500ml</span>
+                <span class="percentage-label">目标: {{ waterGoal }}ml</span>
               </template>
             </el-progress>
           </div>
@@ -24,10 +24,10 @@
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
-              <span>Recent Activity</span>
+              <span>近期活动</span>
             </div>
           </template>
-          <div v-if="activities.length === 0">No recent activity</div>
+          <div v-if="activities.length === 0">暂无近期活动</div>
           <el-timeline v-else>
             <el-timeline-item
               v-for="(activity, index) in activities"
@@ -46,16 +46,16 @@
     </el-row>
 
     <!-- Add Water Dialog -->
-    <el-dialog v-model="dialogVisible" title="Log Water Intake" width="30%">
+    <el-dialog v-model="dialogVisible" title="记录饮水量" width="30%">
       <el-form>
-        <el-form-item label="Amount (ml)">
+        <el-form-item label="数量 (ml)">
            <el-input-number v-model="waterForm.amount" :step="100" />
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="submitWater">Confirm</el-button>
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitWater">确认</el-button>
         </span>
       </template>
     </el-dialog>
@@ -87,7 +87,7 @@ const colors = [
 
 const fetchWater = async () => {
   try {
-    // Hardcoded userId 1 for admin as per plan
+    // Hardcoded userId 1 for admin as per plan.Ideally this should come from user state.
     const res = await axios.get('/api/water/today?userId=1')
     if (res.data.code === 200) {
         waterIntake.value = res.data.data
@@ -108,23 +108,23 @@ const submitWater = async () => {
             amount: waterForm.value.amount
         })
         if (res.data.code === 200) {
-            ElMessage.success('Water logged!')
+            ElMessage.success('记录成功')
             dialogVisible.value = false
             fetchWater()
         } else {
-            ElMessage.error(res.data.msg || 'Failed')
+            ElMessage.error(res.data.msg || '记录失败')
         }
     } catch (err) {
-        ElMessage.error('Error logging water')
+        ElMessage.error('记录失败')
     }
 }
 
 // Mock activities for now, or fetch from backend if available
 const fetchActivities = () => {
     activities.value = [
-        { time: '2023-10-27 10:00', title: 'Workout Completed', content: 'Morning Cardio - 5km Run' },
-        { time: '2023-10-26 18:30', title: 'Meal Logged', content: 'Dinner: Chicken Breast & Rice' },
-        { time: '2023-10-26 09:15', title: 'Badge Earned', content: '7 Day Streak!' }
+        { time: '2023-10-27 10:00', title: '训练完成', content: '晨跑 - 5公里' },
+        { time: '2023-10-26 18:30', title: '饮食记录', content: '晚餐: 鸡胸肉 & 米饭' },
+        { time: '2023-10-26 09:15', title: '获得徽章', content: '坚持7天！' }
     ]
 }
 
