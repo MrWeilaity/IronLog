@@ -15,7 +15,7 @@
 
 -- 1. Users (password: 123456)
 INSERT INTO sys_user (id, username, password, nickname, gender, height, weight, birthday, role, status, created_at, updated_at) VALUES
-(1, 'admin', '123456', 'Iron Admin', 1, 180.0, 80.0, '1990-01-01', 'ADMIN', 1, NOW(), NOW()),
+(1, 'admin', 'admin123', 'Iron Admin', 1, 180.0, 80.0, '1990-01-01', 'ADMIN', 1, NOW(), NOW()),
 (2, 'user1', '123456', 'Alice Fit', 2, 165.0, 55.0, '1995-05-15', 'USER', 1, NOW(), NOW()),
 (3, 'user2', '123456', 'Bob Builder', 1, 175.0, 85.0, '1988-11-20', 'USER', 1, NOW(), NOW()),
 (4, 'user3', '123456', 'Charlie Runner', 1, 178.0, 70.0, '1992-03-10', 'USER', 1, NOW(), NOW()),
