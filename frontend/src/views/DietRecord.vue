@@ -72,15 +72,13 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import CaloriesChart from '../components/CaloriesChart.vue'
+import axios from 'axios'
 
 const dialogVisible = ref(false)
-const meals = ref([
-    { mealType: '早餐', foodName: '燕麦牛奶', calories: 350, protein: 12, carbs: 50, fat: 8 },
-    { mealType: '午餐', foodName: '鸡胸肉沙拉', calories: 450, protein: 40, carbs: 20, fat: 15 }
-])
+const meals = ref([])
 
 const form = ref({
     mealType: '早餐',
@@ -91,24 +89,60 @@ const form = ref({
     fat: 0
 })
 
-const totalCalories = computed(() => meals.value.reduce((sum, item) => sum + item.calories, 0))
-const totalProtein = computed(() => meals.value.reduce((sum, item) => sum + item.protein, 0))
-const totalCarbs = computed(() => meals.value.reduce((sum, item) => sum + item.carbs, 0))
-const totalFat = computed(() => meals.value.reduce((sum, item) => sum + item.fat, 0))
+const totalCalories = computed(() => meals.value.reduce((sum, item) => sum + (item.calories || 0), 0))
+const totalProtein = computed(() => meals.value.reduce((sum, item) => sum + (item.protein || 0), 0))
+const totalCarbs = computed(() => meals.value.reduce((sum, item) => sum + (item.carbs || 0), 0))
+const totalFat = computed(() => meals.value.reduce((sum, item) => sum + (item.fat || 0), 0))
 
-const addMeal = () => {
-    meals.value.push({ ...form.value })
-    dialogVisible.value = false
-    ElMessage.success('添加成功')
-    form.value = {
-        mealType: '早餐',
-        foodName: '',
-        calories: 0,
-        protein: 0,
-        carbs: 0,
-        fat: 0
+const fetchMeals = async () => {
+    try {
+        const res = await axios.get('/api/nutrition/diet-logs', {
+            params: { userId: 1, date: new Date().toISOString().split('T')[0] }
+        })
+        if (res.data.code === 200) {
+            meals.value = res.data.data || []
+        }
+    } catch (err) {
+        console.error('获取饮食记录失败', err)
     }
 }
+
+const addMeal = async () => {
+    try {
+        const res = await axios.post('/api/nutrition/diet-logs', {
+            userId: 1,
+            foodId: 1, // 默认食物ID，实际应该从食物列表选择
+            logDate: new Date().toISOString().split('T')[0],
+            mealType: form.value.mealType,
+            intakeAmount: 100,
+            calories: form.value.calories,
+            protein: form.value.protein,
+            carbs: form.value.carbs,
+            fat: form.value.fat
+        })
+        if (res.data.code === 200) {
+            dialogVisible.value = false
+            ElMessage.success('添加成功')
+            fetchMeals()
+            form.value = {
+                mealType: '早餐',
+                foodName: '',
+                calories: 0,
+                protein: 0,
+                carbs: 0,
+                fat: 0
+            }
+        } else {
+            ElMessage.error(res.data.msg || '添加失败')
+        }
+    } catch (err) {
+        ElMessage.error('添加失败')
+    }
+}
+
+onMounted(() => {
+    fetchMeals()
+})
 </script>
 
 <style scoped>

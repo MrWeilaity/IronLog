@@ -46,4 +46,8 @@ public class NutritionService {
 
         return dietLogRepository.save(log);
     }
+
+    public void deleteDietLog(Long id) {
+        dietLogRepository.deleteById(id);
+    }
 }

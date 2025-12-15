@@ -8,7 +8,7 @@
         </div>
       </template>
       <el-table :data="users" style="width: 100%">
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="userId" label="ID" width="80" />
         <el-table-column prop="username" label="用户名" />
         <el-table-column prop="email" label="邮箱" />
         <el-table-column prop="role" label="角色" />
@@ -47,20 +47,30 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import axios from 'axios'
 
-const users = ref([
-  { id: 1, username: 'admin', email: 'admin@example.com', role: 'Admin' },
-  { id: 2, username: 'user1', email: 'user1@example.com', role: 'User' },
-])
+const users = ref([])
 
 const dialogVisible = ref(false)
 const form = ref({
+  userId: null,
   username: '',
   email: '',
   role: 'User'
 })
+
+const fetchUsers = async () => {
+  try {
+    const res = await axios.get('/api/users')
+    if (res.data.code === 200) {
+      users.value = res.data.data || []
+    }
+  } catch (err) {
+    console.error('获取用户列表失败', err)
+  }
+}
 
 const handleEdit = (row) => {
   form.value = { ...row }
@@ -73,21 +83,48 @@ const handleDelete = (row) => {
     cancelButtonText: '取消',
     type: 'warning',
   })
-    .then(() => {
-      users.value = users.value.filter(u => u.id !== row.id)
-      ElMessage({
-        type: 'success',
-        message: '删除成功',
-      })
+    .then(async () => {
+      try {
+        const res = await axios.delete(`/api/users/${row.userId}`)
+        if (res.data.code === 200) {
+          ElMessage({
+            type: 'success',
+            message: '删除成功',
+          })
+          fetchUsers()
+        } else {
+          ElMessage.error(res.data.msg || '删除失败')
+        }
+      } catch (err) {
+        ElMessage.error('删除失败')
+      }
     })
     .catch(() => {})
 }
 
-const handleSave = () => {
-  // Mock save
-  dialogVisible.value = false
-  ElMessage.success('保存成功')
+const handleSave = async () => {
+  try {
+    let res
+    if (form.value.userId) {
+      res = await axios.put(`/api/users/${form.value.userId}`, form.value)
+    } else {
+      res = await axios.post('/api/users/register', form.value)
+    }
+    if (res.data.code === 200) {
+      dialogVisible.value = false
+      ElMessage.success('保存成功')
+      fetchUsers()
+    } else {
+      ElMessage.error(res.data.msg || '保存失败')
+    }
+  } catch (err) {
+    ElMessage.error('保存失败')
+  }
 }
+
+onMounted(() => {
+  fetchUsers()
+})
 </script>
 
 <style scoped>
