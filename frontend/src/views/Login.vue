@@ -1,54 +1,106 @@
 <template>
-  <div class="login-container">
-    <h1>Login</h1>
-    <div v-if="statusMessage">
-        <p>Status: {{ statusMessage }}</p>
-    </div>
-    <div class="test-controls">
-        <button @click="testBackend">Test Backend Connectivity</button>
+  <div class="login-wrapper">
+    <div class="login-box">
+      <h2>IronLog 登录</h2>
+      <el-form :model="loginForm" :rules="rules" ref="loginFormRef" label-width="0px">
+        <el-form-item prop="username">
+          <el-input v-model="loginForm.username" placeholder="用户名" prefix-icon="User" />
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input v-model="loginForm.password" type="password" placeholder="密码" prefix-icon="Lock" show-password />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="loading" class="login-btn" @click="handleLogin">登录</el-button>
+        </el-form-item>
+      </el-form>
+      <div v-if="errorMessage" class="error-msg">{{ errorMessage }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { User, Lock } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
-const statusMessage = ref('');
+const router = useRouter()
+const loginFormRef = ref(null)
+const loading = ref(false)
+const errorMessage = ref('')
 
-const testBackend = async () => {
-    statusMessage.value = "Pinging backend...";
-    try {
-        // We assume /api is proxied by Nginx to the backend
-        // We hit a known endpoint, e.g., /api/users/1 or similar.
-        // Since we don't know if user 1 exists, we expect either 200 or 404, but a response nonetheless.
-        // Or we can try the login endpoint with dummy data.
+const loginForm = reactive({
+  username: '',
+  password: ''
+})
+
+const rules = {
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+}
+
+const handleLogin = async () => {
+  if (!loginFormRef.value) return
+
+  await loginFormRef.value.validate(async (valid) => {
+    if (valid) {
+      loading.value = true
+      errorMessage.value = ''
+
+      try {
         const response = await fetch('/api/users/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: 'test', password: 'test' })
+            body: JSON.stringify(loginForm)
         });
 
         if (response.ok) {
-             statusMessage.value = "Backend connected! (Login Success)";
+             ElMessage.success('登录成功')
+             router.push('/dashboard')
         } else {
              const text = await response.text();
-             statusMessage.value = `Backend reachable, but returned: ${response.status} - ${text}`;
+             errorMessage.value = '登录失败: ' + text
         }
-    } catch (error) {
-        statusMessage.value = `Error connecting to backend: ${error.message}`;
-        console.error(error);
+      } catch (error) {
+        errorMessage.value = '网络错误: ' + error.message
+      } finally {
+        loading.value = false
+      }
     }
-};
+  })
+}
 </script>
 
 <style scoped>
-.login-container {
-    padding: 20px;
-    text-align: center;
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #2d3a4b;
 }
-button {
-    margin-top: 10px;
-    padding: 8px 16px;
-    cursor: pointer;
+
+.login-box {
+  width: 350px;
+  padding: 30px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.login-btn {
+  width: 100%;
+}
+
+.error-msg {
+  color: red;
+  margin-top: 10px;
+  font-size: 14px;
 }
 </style>
