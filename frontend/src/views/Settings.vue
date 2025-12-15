@@ -42,6 +42,9 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
+import { getCurrentUserId } from '../utils/auth'
+
+const userId = getCurrentUserId()
 
 const form = ref({
     username: '',
@@ -55,7 +58,7 @@ const form = ref({
 
 const fetchUserInfo = async () => {
     try {
-        const res = await axios.get('/api/users/1')
+        const res = await axios.get(`/api/users/${userId}`)
         if (res.data.code === 200 && res.data.data) {
             const user = res.data.data
             form.value = {
@@ -75,7 +78,7 @@ const fetchUserInfo = async () => {
 
 const saveSettings = async () => {
     try {
-        const res = await axios.put('/api/users/1', form.value)
+        const res = await axios.put(`/api/users/${userId}`, form.value)
         if (res.data.code === 200) {
             ElMessage.success('个人信息已更新')
         } else {

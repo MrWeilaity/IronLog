@@ -80,9 +80,11 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import CaloriesChart from '../components/CaloriesChart.vue'
 import axios from 'axios'
+import { getCurrentUserId } from '../utils/auth'
 
 const dialogVisible = ref(false)
 const meals = ref([])
+const userId = getCurrentUserId()
 
 const form = ref({
     mealType: '早餐',
@@ -101,7 +103,7 @@ const totalFat = computed(() => meals.value.reduce((sum, item) => sum + (parseFl
 const fetchMeals = async () => {
     try {
         const res = await axios.get('/api/nutrition/diet-logs', {
-            params: { userId: 1, date: new Date().toISOString().split('T')[0] }
+            params: { userId, date: new Date().toISOString().split('T')[0] }
         })
         if (res.data.code === 200) {
             meals.value = res.data.data || []
@@ -124,8 +126,8 @@ const getMealTypeName = (mealType) => {
 const addMeal = async () => {
     try {
         const res = await axios.post('/api/nutrition/diet-logs', {
-            userId: 1,
-            foodId: 1, // 默认食物ID，实际应该从食物列表选择
+            userId,
+            foodId: 1, // TODO: 应该从食物列表选择，需要实现食物搜索功能
             logDate: new Date().toISOString().split('T')[0],
             mealType: getMealTypeValue(form.value.mealType),
             intakeAmount: 100,

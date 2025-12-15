@@ -56,9 +56,11 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
+import { getCurrentUserId } from '../utils/auth'
 
 const dialogVisible = ref(false)
 const trainings = ref([])
+const userId = getCurrentUserId()
 
 const form = ref({
     date: new Date().toISOString().split('T')[0],
@@ -70,7 +72,7 @@ const form = ref({
 const fetchTrainings = async () => {
     try {
         const res = await axios.get('/api/training/records', {
-            params: { userId: 1, date: new Date().toISOString().split('T')[0] }
+            params: { userId, date: new Date().toISOString().split('T')[0] }
         })
         if (res.data.code === 200) {
             trainings.value = res.data.data || []
@@ -83,7 +85,7 @@ const fetchTrainings = async () => {
 const submitTraining = async () => {
     try {
         const res = await axios.post('/api/training/records', {
-            userId: 1,
+            userId,
             recordDate: form.value.date,
             duration: form.value.duration,
             exerciseType: form.value.type,
