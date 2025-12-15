@@ -93,6 +93,9 @@ const router = createRouter({
   routes
 })
 
+// Public routes that don't require authentication
+const publicRoutes = ['/login', '/register']
+
 // Navigation guard for authentication and authorization
 router.beforeEach((to, from, next) => {
   // Get user info from localStorage
@@ -109,8 +112,7 @@ router.beforeEach((to, from, next) => {
   // Check if route is admin route
   const isAdminRoute = to.path.startsWith('/admin')
   
-  // Public routes that don't require authentication
-  const publicRoutes = ['/login', '/register']
+  // Check if route is public
   const isPublicRoute = publicRoutes.includes(to.path)
 
   // If accessing admin routes
