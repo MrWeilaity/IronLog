@@ -15,7 +15,7 @@ CREATE TABLE sys_user (
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     nickname VARCHAR(255),
-    email VARCHAR(255),
+    email VARCHAR(255) UNIQUE,
     gender INT, -- 0: 保密, 1: 男, 2: 女
     height DECIMAL(10, 2),
     weight DECIMAL(10, 2),

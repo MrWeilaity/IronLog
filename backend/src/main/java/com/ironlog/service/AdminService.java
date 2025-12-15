@@ -165,7 +165,8 @@ public class AdminService {
         Optional<SysUser> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {
             SysUser user = userOpt.get();
-            user.setPassword(newPassword);
+            // Encode password before saving
+            user.setPassword(com.ironlog.common.PasswordEncoder.encode(newPassword));
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
             return true;

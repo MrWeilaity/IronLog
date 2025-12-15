@@ -2,7 +2,7 @@
 -- Run this if upgrading from an older version
 
 -- Add email and bio columns to sys_user table if they don't exist
-ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS email VARCHAR(255);
+ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE;
 ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS bio TEXT;
 
 -- Create system_settings table if it doesn't exist
