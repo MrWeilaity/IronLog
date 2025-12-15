@@ -44,11 +44,11 @@
             <div class="user-info">
               <el-dropdown>
                 <span class="el-dropdown-link">
-                  Admin <el-icon class="el-icon--right"><arrow-down /></el-icon>
+                  {{ username }} <el-icon class="el-icon--right"><arrow-down /></el-icon>
                 </span>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item>退出登录</el-dropdown-item>
+                    <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -64,13 +64,32 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Odometer, Notebook, Food, Calendar, TrendCharts, Setting, ArrowDown } from '@element-plus/icons-vue'
 
 const route = useRoute()
+const router = useRouter()
 const activeMenu = computed(() => route.path)
 const currentRouteName = computed(() => route.name)
+const username = ref('用户')
+
+onMounted(() => {
+  try {
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      const user = JSON.parse(userStr)
+      username.value = user.nickname || user.username || '用户'
+    }
+  } catch (err) {
+    console.error('Failed to parse user data', err)
+  }
+})
+
+const logout = () => {
+  localStorage.removeItem('user')
+  router.push('/login')
+}
 </script>
 
 <style scoped>

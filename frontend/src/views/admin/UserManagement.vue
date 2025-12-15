@@ -8,7 +8,7 @@
         </div>
       </template>
       <el-table :data="users" style="width: 100%">
-        <el-table-column prop="userId" label="ID" width="80" />
+        <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="username" label="用户名" />
         <el-table-column prop="email" label="邮箱" />
         <el-table-column prop="role" label="角色" />
@@ -55,7 +55,7 @@ const users = ref([])
 
 const dialogVisible = ref(false)
 const form = ref({
-  userId: null,
+  id: null,
   username: '',
   email: '',
   role: 'User'
@@ -85,7 +85,7 @@ const handleDelete = (row) => {
   })
     .then(async () => {
       try {
-        const res = await axios.delete(`/api/users/${row.userId}`)
+        const res = await axios.delete(`/api/users/${row.id}`)
         if (res.data.code === 200) {
           ElMessage({
             type: 'success',
@@ -105,8 +105,8 @@ const handleDelete = (row) => {
 const handleSave = async () => {
   try {
     let res
-    if (form.value.userId) {
-      res = await axios.put(`/api/users/${form.value.userId}`, form.value)
+    if (form.value.id) {
+      res = await axios.put(`/api/users/${form.value.id}`, form.value)
     } else {
       res = await axios.post('/api/users/register', form.value)
     }

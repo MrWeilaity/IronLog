@@ -48,7 +48,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public Result<SysUser> updateUser(@PathVariable Long id, @RequestBody SysUser user) {
-        user.setUserId(id);
+        user.setId(id);
         SysUser updatedUser = userService.updateUser(user);
         return Result.success("更新成功", updatedUser);
     }
