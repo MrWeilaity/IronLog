@@ -113,8 +113,8 @@ const renderWeightChart = (data) => {
     
     weightChart = echarts.init(chartDom)
     
-    const dates = data.map(d => d.date.substring(5))
-    const weights = data.map(d => d.weight)
+    const dates = data.map(d => d.date ? d.date.substring(5) : '')
+    const weights = data.map(d => d.weight || 0)
     
     const option = {
         tooltip: {

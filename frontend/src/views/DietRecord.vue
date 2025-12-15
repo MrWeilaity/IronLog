@@ -193,21 +193,26 @@ const searchFoods = async (query) => {
 }
 
 const onFoodSelected = async (foodId) => {
-    if (!foodId) {
+    // Handle null/undefined foodId
+    if (!foodId || foodId === null || foodId === undefined) {
         selectedFoodInfo.value = null
         return
     }
     
     try {
         const res = await axios.get(`/api/nutrition/foods/${foodId}`)
-        if (res.data.code === 200) {
+        if (res.data.code === 200 && res.data.data) {
             selectedFoodInfo.value = res.data.data
             // Set default intake amount to standard unit
             form.value.intakeAmount = res.data.data.stdUnit || 1
+        } else {
+            selectedFoodInfo.value = null
+            ElMessage.error('未找到食物信息')
         }
     } catch (err) {
         console.error('获取食物详情失败', err)
         ElMessage.error('获取食物详情失败')
+        selectedFoodInfo.value = null
     }
 }
 

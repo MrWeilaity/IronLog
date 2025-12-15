@@ -38,18 +38,25 @@ public class AdminService {
         LocalDate today = LocalDate.now();
         Set<Long> activeUserIds = new HashSet<>();
         
-        List<TrainRecord> todayRecords = trainRecordRepository.findAll().stream()
-                .filter(r -> r.getRecordDate().equals(today))
-                .collect(Collectors.toList());
-        todayRecords.forEach(r -> activeUserIds.add(r.getUserId()));
+        // Get all users who have training records today
+        List<SysUser> allUsers = userRepository.findAll();
+        for (SysUser user : allUsers) {
+            List<TrainRecord> userTodayRecords = trainRecordRepository.findByUserIdAndRecordDate(user.getId(), today);
+            if (!userTodayRecords.isEmpty()) {
+                activeUserIds.add(user.getId());
+            }
+        }
         
         stats.put("activeToday", activeUserIds.size());
 
         // Total training records this month
         LocalDate monthStart = today.withDayOfMonth(1);
-        long monthlyTrainings = trainRecordRepository.findAll().stream()
-                .filter(r -> r.getRecordDate().isAfter(monthStart.minusDays(1)))
-                .count();
+        long monthlyTrainings = 0;
+        for (SysUser user : allUsers) {
+            List<TrainRecord> monthRecords = trainRecordRepository.findByUserIdAndRecordDateBetween(
+                user.getId(), monthStart, today);
+            monthlyTrainings += monthRecords.size();
+        }
         stats.put("monthlyTrainings", monthlyTrainings);
 
         // System status

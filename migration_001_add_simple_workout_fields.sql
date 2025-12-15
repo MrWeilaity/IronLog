@@ -2,8 +2,10 @@
 -- This adds support for duration, exercise_type, and notes columns
 
 -- Add new columns to train_record table
+-- action_id is made nullable to support simple workout logging where users
+-- log general exercises (like "running" or "swimming") without selecting a specific action from the exercise library
 ALTER TABLE train_record
-    MODIFY COLUMN action_id BIGINT NULL,
+    MODIFY COLUMN action_id BIGINT NULL COMMENT 'Made nullable to support simple workout logging',
     MODIFY COLUMN set_no INT NULL,
     MODIFY COLUMN weight DECIMAL(10, 2) NULL,
     MODIFY COLUMN reps INT NULL,

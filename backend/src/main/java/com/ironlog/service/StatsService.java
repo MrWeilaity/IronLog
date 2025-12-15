@@ -140,12 +140,14 @@ public class StatsService {
 
         double currentWeight = userOpt.get().getWeight().doubleValue();
         
-        // Generate mock trend data
+        // Generate predictable mock trend data using seeded pattern
+        // This creates a more realistic weight fluctuation pattern
         for (int i = days - 1; i >= 0; i--) {
             Map<String, Object> point = new HashMap<>();
             point.put("date", LocalDate.now().minusDays(i).toString());
-            // Add some variation for demonstration
-            double variation = (Math.random() - 0.5) * 2;
+            
+            // Use sine wave pattern for predictable but realistic weight variation
+            double variation = Math.sin(i * 0.3) * 0.5;
             point.put("weight", Math.round((currentWeight + variation) * 10.0) / 10.0);
             trend.add(point);
         }
