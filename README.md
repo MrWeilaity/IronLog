@@ -53,16 +53,21 @@ A comprehensive fitness and health management platform built with Spring Boot an
 Create the database and run the SQL scripts:
 
 ```bash
-# Create database
+# Method 1: Quick Start - Use the all-in-one initialization script (Recommended)
 mysql -u root -p
-CREATE DATABASE ironlog;
+CREATE DATABASE ironlog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+exit
+mysql -u root -p ironlog < init_database.sql
 
-# Run schema setup
+# Method 2: Using full_db_script.sql
 mysql -u root -p ironlog < full_db_script.sql
 
-# If upgrading from older version, run migration
+# If upgrading from older version, run migrations
 mysql -u root -p ironlog < migration_001_add_simple_workout_fields.sql
+mysql -u root -p ironlog < migration_002_add_bio_and_system_tables.sql
 ```
+
+📖 For detailed database setup instructions, see [DATABASE_INIT_README.md](DATABASE_INIT_README.md)
 
 ### 2. Backend Setup
 
