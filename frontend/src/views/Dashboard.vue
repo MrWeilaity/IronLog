@@ -1,5 +1,42 @@
 <template>
   <div class="dashboard-container">
+    <!-- Stats Overview -->
+    <el-row :gutter="20" class="stats-row">
+      <el-col :span="6">
+        <el-card shadow="hover">
+          <div class="stat-card">
+            <div class="stat-value">{{ dashboardStats.todayTrainingCount || 0 }}</div>
+            <div class="stat-label">今日训练</div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover">
+          <div class="stat-card">
+            <div class="stat-value">{{ dashboardStats.weeklyTrainingDays || 0 }}</div>
+            <div class="stat-label">本周训练天数</div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover">
+          <div class="stat-card">
+            <div class="stat-value">{{ bodyMetrics.bmi || 'N/A' }}</div>
+            <div class="stat-label">BMI指数</div>
+            <div class="stat-tag" v-if="bodyMetrics.bmiCategory">{{ bodyMetrics.bmiCategory }}</div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="6">
+        <el-card shadow="hover">
+          <div class="stat-card">
+            <div class="stat-value">{{ dashboardStats.monthlyTrainingDays || 0 }}</div>
+            <div class="stat-label">本月训练天数</div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <el-row :gutter="20">
       <el-col :span="8">
         <el-card class="box-card">
@@ -21,6 +58,19 @@
       </el-col>
 
       <el-col :span="16">
+        <el-card class="box-card">
+          <template #header>
+            <div class="card-header">
+              <span>本周运动统计</span>
+            </div>
+          </template>
+          <div id="weeklyChart" style="height: 300px;"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <el-row :gutter="20" class="mt-20">
+      <el-col :span="24">
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
@@ -67,6 +117,7 @@ import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { getCurrentUserId } from '../utils/auth'
+import * as echarts from 'echarts'
 
 const userId = getCurrentUserId()
 const waterIntake = ref(0)
@@ -74,6 +125,10 @@ const waterGoal = 2500
 const dialogVisible = ref(false)
 const waterForm = ref({ amount: 250 })
 const activities = ref([])
+const dashboardStats = ref({})
+const bodyMetrics = ref({})
+const weeklyActivity = ref({})
+let weeklyChart = null
 
 const waterPercentage = computed(() => {
   return Math.min((waterIntake.value / waterGoal) * 100, 100)
@@ -120,17 +175,102 @@ const submitWater = async () => {
     }
 }
 
-// Mock activities for now, or fetch from backend if available
-const fetchActivities = () => {
-    activities.value = [
-        { time: '2023-10-27 10:00', title: '训练完成', content: '晨跑 - 5公里' },
-        { time: '2023-10-26 18:30', title: '饮食记录', content: '晚餐: 鸡胸肉 & 米饭' },
-        { time: '2023-10-26 09:15', title: '获得徽章', content: '坚持7天！' }
-    ]
+const fetchDashboardStats = async () => {
+    try {
+        const res = await axios.get(`/api/dashboard/stats/${userId}`)
+        if (res.data.code === 200) {
+            dashboardStats.value = res.data.data
+        }
+    } catch (err) {
+        console.error('获取仪表盘统计失败', err)
+    }
+}
+
+const fetchBodyMetrics = async () => {
+    try {
+        const res = await axios.get(`/api/dashboard/body-metrics/${userId}`)
+        if (res.data.code === 200) {
+            bodyMetrics.value = res.data.data
+        }
+    } catch (err) {
+        console.error('获取身体指标失败', err)
+    }
+}
+
+const fetchWeeklyActivity = async () => {
+    try {
+        const res = await axios.get(`/api/dashboard/weekly-activity/${userId}`)
+        if (res.data.code === 200) {
+            weeklyActivity.value = res.data.data
+            renderWeeklyChart()
+        }
+    } catch (err) {
+        console.error('获取周活动统计失败', err)
+    }
+}
+
+const fetchActivities = async () => {
+    try {
+        const res = await axios.get(`/api/dashboard/recent-activities/${userId}`)
+        if (res.data.code === 200) {
+            activities.value = res.data.data
+        }
+    } catch (err) {
+        console.error('获取近期活动失败', err)
+        // Fallback to mock data
+        activities.value = []
+    }
+}
+
+const renderWeeklyChart = () => {
+    const chartDom = document.getElementById('weeklyChart')
+    if (!chartDom) return
+    
+    if (weeklyChart) {
+        weeklyChart.dispose()
+    }
+    
+    weeklyChart = echarts.init(chartDom)
+    
+    const daily = weeklyActivity.value.daily || []
+    const dates = daily.map(d => {
+        const date = new Date(d.date)
+        return `${date.getMonth() + 1}/${date.getDate()}`
+    })
+    const minutes = daily.map(d => d.minutes)
+    
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: dates
+        },
+        yAxis: {
+            type: 'value',
+            name: '分钟'
+        },
+        series: [{
+            data: minutes,
+            type: 'bar',
+            itemStyle: {
+                color: '#409EFF'
+            }
+        }]
+    }
+    
+    weeklyChart.setOption(option)
 }
 
 onMounted(() => {
     fetchWater()
+    fetchDashboardStats()
+    fetchBodyMetrics()
+    fetchWeeklyActivity()
     fetchActivities()
 })
 </script>
@@ -139,6 +279,38 @@ onMounted(() => {
 .dashboard-container {
     padding: 20px;
 }
+
+.stats-row {
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: #409EFF;
+    margin-bottom: 10px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #909399;
+}
+
+.stat-tag {
+    margin-top: 8px;
+    display: inline-block;
+    padding: 2px 10px;
+    background-color: #f0f9ff;
+    color: #409EFF;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -157,14 +329,20 @@ onMounted(() => {
 .box-card {
   width: 100%;
 }
+
 .percentage-value {
   display: block;
   margin-top: 10px;
   font-size: 28px;
 }
+
 .percentage-label {
   display: block;
   margin-top: 10px;
   font-size: 12px;
+}
+
+.mt-20 {
+    margin-top: 20px;
 }
 </style>

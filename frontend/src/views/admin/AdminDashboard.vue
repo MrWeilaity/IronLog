@@ -8,7 +8,7 @@
               <span>总用户数</span>
             </div>
           </template>
-          <div class="card-value">1,234</div>
+          <div class="card-value">{{ stats.totalUsers }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
@@ -18,7 +18,7 @@
               <span>今日活跃</span>
             </div>
           </template>
-          <div class="card-value">56</div>
+          <div class="card-value">{{ stats.activeToday }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
@@ -28,7 +28,7 @@
               <span>本月新增训练</span>
             </div>
           </template>
-          <div class="card-value">890</div>
+          <div class="card-value">{{ stats.monthlyTrainings }}</div>
         </el-card>
       </el-col>
       <el-col :span="6">
@@ -38,7 +38,7 @@
               <span>系统状态</span>
             </div>
           </template>
-          <div class="card-value status-ok">正常</div>
+          <div class="card-value status-ok">{{ stats.systemStatus }}</div>
         </el-card>
       </el-col>
     </el-row>
@@ -51,7 +51,12 @@
           </template>
           <el-table :data="recentUsers" style="width: 100%">
             <el-table-column prop="username" label="用户名" />
-            <el-table-column prop="date" label="注册日期" />
+            <el-table-column prop="nickname" label="昵称" />
+            <el-table-column prop="createdAt" label="注册日期" width="180">
+              <template #default="scope">
+                {{ scope.row.createdAt ? scope.row.createdAt.substring(0, 10) : 'N/A' }}
+              </template>
+            </el-table-column>
           </el-table>
         </el-card>
       </el-col>
@@ -70,13 +75,43 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 
-const recentUsers = ref([
-  { username: '用户1', date: '2023-10-26' },
-  { username: '用户2', date: '2023-10-25' },
-  { username: '用户3', date: '2023-10-25' },
-])
+const recentUsers = ref([])
+const stats = ref({
+  totalUsers: 0,
+  activeToday: 0,
+  monthlyTrainings: 0,
+  systemStatus: '正常'
+})
+
+const fetchDashboardStats = async () => {
+  try {
+    const res = await axios.get('/api/admin/dashboard-stats')
+    if (res.data.code === 200) {
+      stats.value = res.data.data
+    }
+  } catch (err) {
+    console.error('获取管理后台统计失败', err)
+  }
+}
+
+const fetchRecentUsers = async () => {
+  try {
+    const res = await axios.get('/api/admin/recent-users', { params: { limit: 5 } })
+    if (res.data.code === 200) {
+      recentUsers.value = res.data.data
+    }
+  } catch (err) {
+    console.error('获取最新用户失败', err)
+  }
+}
+
+onMounted(() => {
+  fetchDashboardStats()
+  fetchRecentUsers()
+})
 </script>
 
 <style scoped>
