@@ -20,8 +20,13 @@ public class UserController {
     @GetMapping("/{id}")
     public Result<SysUser> getUser(@PathVariable Long id) {
         Optional<SysUser> user = userService.findById(id);
-        return user.map(Result::success)
-                   .orElseGet(() -> Result.error("用户不存在"));
+        if (user.isPresent()) {
+            SysUser u = user.get();
+            // Don't send password back to client
+            u.setPassword(null);
+            return Result.success(u);
+        }
+        return Result.error("用户不存在");
     }
 
     @GetMapping
@@ -32,18 +37,39 @@ public class UserController {
     @PostMapping("/register")
     public Result<SysUser> registerUser(@RequestBody SysUser user) {
         SysUser registeredUser = userService.registerUser(user);
+        // Don't send password back to client
+        registeredUser.setPassword(null);
         return Result.success("注册成功", registeredUser);
     }
 
     @PostMapping("/login")
     public Result<SysUser> loginUser(@RequestBody SysUser loginRequest) {
-        // Very basic login simulation
-        Optional<SysUser> user = userService.findByUsername(loginRequest.getUsername());
-        if (user.isPresent() && user.get().getPassword().equals(loginRequest.getPassword())) {
-            // In real app, return JWT token
-            return Result.success("登录成功", user.get());
+        // Validate input
+        if (loginRequest.getUsername() == null || loginRequest.getUsername().trim().isEmpty()) {
+            return Result.error(400, "用户名不能为空");
         }
-        return Result.error(401, "用户名或密码错误");
+        if (loginRequest.getPassword() == null || loginRequest.getPassword().trim().isEmpty()) {
+            return Result.error(400, "密码不能为空");
+        }
+        
+        // Find user by username
+        Optional<SysUser> userOpt = userService.findByUsername(loginRequest.getUsername());
+        if (!userOpt.isPresent()) {
+            return Result.error(401, "用户名或密码错误");
+        }
+        
+        SysUser user = userOpt.get();
+        
+        // Verify password
+        if (!user.getPassword().equals(loginRequest.getPassword())) {
+            return Result.error(401, "用户名或密码错误");
+        }
+        
+        // Don't send password back to client
+        user.setPassword(null);
+        
+        // In real app, return JWT token
+        return Result.success("登录成功", user);
     }
 
     @PutMapping("/{id}")

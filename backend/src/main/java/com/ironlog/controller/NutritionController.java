@@ -20,8 +20,19 @@ public class NutritionController {
     private NutritionService nutritionService;
 
     @GetMapping("/foods")
-    public Result<List<FoodNutrition>> searchFoods(@RequestParam String query) {
+    public Result<List<FoodNutrition>> searchFoods(@RequestParam(required = false) String query) {
+        if (query == null || query.trim().isEmpty()) {
+            // Return all foods if no query provided
+            return Result.success(nutritionService.getAllFoods());
+        }
         return Result.success(nutritionService.searchFoods(query));
+    }
+    
+    @GetMapping("/foods/{id}")
+    public Result<FoodNutrition> getFoodById(@PathVariable Long id) {
+        return nutritionService.getFoodById(id)
+                .map(Result::success)
+                .orElseGet(() -> Result.error("食物不存在"));
     }
 
     @PostMapping("/foods")

@@ -22,6 +22,14 @@ public class NutritionService {
     public List<FoodNutrition> searchFoods(String query) {
         return foodRepository.findByNameContainingIgnoreCase(query);
     }
+    
+    public List<FoodNutrition> getAllFoods() {
+        return foodRepository.findAll();
+    }
+    
+    public java.util.Optional<FoodNutrition> getFoodById(Long id) {
+        return foodRepository.findById(id);
+    }
 
     public FoodNutrition addFood(FoodNutrition food) {
         return foodRepository.save(food);
