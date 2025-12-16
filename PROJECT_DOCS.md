@@ -530,7 +530,7 @@ erDiagram
     SYS_USER {
         bigint id PK "主键ID"
         varchar username UK "用户名(唯一)"
-        varchar password "密码(SHA256)"
+        varchar password "密码(SHA-256)"
         varchar nickname "昵称"
         varchar email UK "邮箱(唯一)"
         int gender "性别:0保密,1男,2女"
@@ -1137,7 +1137,7 @@ graph LR
 #### 4.2.1 克隆代码仓库
 
 ```bash
-git clone https://github.com/your-repo/IronLog.git
+git clone https://github.com/MrWeilaity/IronLog.git
 cd IronLog
 ```
 
