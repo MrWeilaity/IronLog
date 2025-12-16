@@ -93,4 +93,58 @@ const router = createRouter({
   routes
 })
 
+// Public routes that don't require authentication
+const publicRoutes = ['/login', '/register']
+
+// Navigation guard for authentication and authorization
+router.beforeEach((to, from, next) => {
+  // Get user info from localStorage
+  let user = null
+  try {
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      user = JSON.parse(userStr)
+    }
+  } catch (err) {
+    console.error('Failed to parse user data', err)
+  }
+
+  // Check if route is admin route
+  const isAdminRoute = to.path.startsWith('/admin')
+  
+  // Check if route is public
+  const isPublicRoute = publicRoutes.includes(to.path)
+
+  // If accessing admin routes
+  if (isAdminRoute) {
+    // Check if user is logged in
+    if (!user) {
+      // Not logged in, redirect to login
+      next('/login')
+      return
+    }
+    // Check if user is admin
+    if (user.role !== 'ADMIN') {
+      // Not an admin, redirect to root
+      next('/')
+      return
+    }
+    // User is admin, allow access
+    next()
+    return
+  }
+
+  // If accessing protected routes (not public and not login/register)
+  if (!isPublicRoute && to.name !== 'NotFound') {
+    if (!user) {
+      // Not logged in, redirect to login
+      next('/login')
+      return
+    }
+  }
+
+  // Allow access
+  next()
+})
+
 export default router
