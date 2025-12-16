@@ -6,7 +6,7 @@ const routes = [
   {
     path: '/',
     component: Layout,
-    redirect: '/dashboard',
+    // redirect: '/dashboard',
     children: [
       {
         path: 'dashboard',
@@ -107,6 +107,14 @@ router.beforeEach((to, from, next) => {
     }
   } catch (err) {
     console.error('Failed to parse user data', err)
+  }
+  if (to.path === '/') {
+    if (user) {
+      next('/dashboard') // 有用户 -> 去仪表盘
+    } else {
+      next('/login')     // 无用户 -> 去登录页
+    }
+    return
   }
 
   // Check if route is admin route
